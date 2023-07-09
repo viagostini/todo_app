@@ -1,22 +1,22 @@
+mod state;
 mod to_do;
-use to_do::traits::delete::Delete;
-use to_do::traits::edit::Edit;
-use to_do::traits::get::Get;
 
-use crate::to_do::enums::TaskStatus;
-use crate::to_do::{to_do_factory, ItemTypes};
+use std::env;
+
+use serde_json::json;
+use state::read_file;
+
+use crate::state::write_to_file;
 
 fn main() {
-    let to_do_item = to_do_factory("washing", TaskStatus::Done);
+    let args: Vec<String> = env::args().collect();
+    let status = &args[1];
+    let title = &args[2];
+    let mut state = read_file("./state.json");
 
-    match to_do_item {
-        ItemTypes::Done(item) => {
-            item.get(&item.super_struct.title);
-            item.delete(&item.super_struct.title);
-        }
-        ItemTypes::Pending(item) => {
-            item.get(&item.super_struct.title);
-            item.set_to_done(&item.super_struct.title);
-        }
-    }
+    println!("Before operation: {:?}", state);
+    state.insert(title.to_string(), json!(status));
+    println!("After operation: {:?}", state);
+
+    write_to_file("./state.json", &mut state);
 }
